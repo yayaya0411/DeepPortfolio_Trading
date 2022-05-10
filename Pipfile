@@ -1,6 +1,6 @@
 [[source]]
 url = "https://pypi.org/simple"
-verify_ssl = true
+verify_ssl = false
 name = "pypi"
 
 [packages]
@@ -12,8 +12,10 @@ tensorflow = "*"
 sklearn = "*"
 h5py = "*"
 gym = "==0.9.4"
+pandas-datareader = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.8"
