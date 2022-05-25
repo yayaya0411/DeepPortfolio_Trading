@@ -8,8 +8,8 @@ from envs import TradingEnv
 from agent import DQNAgent
 from utils import get_data, get_scaler, maybe_make_dir, plot_all
 
-stock_name = "all_set_1"
-stock_table = "stock_table_1"
+stock_name = "0050_2018_2020"
+stock_table = "0050_table"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -30,19 +30,20 @@ if __name__ == '__main__':
     timestamp = time.strftime('%Y%m%d%H%M')
 
     data = get_data(stock_name, stock_table)
-    print(data.shape[1])
-    train = round(data.shape[1]*0.98)
+    # print(data.shape[1])
+    train = round(data.shape[1]*0.70)
     # test = round(data.shape[1]*0.99)
     # train = 979
-    test = 979
+    # test = 979
     # print("train:{}, test:{}".format(data[:, train-1], data[:, test]))
+    test = train+1
     train_data = data[:, :test]
     test_data = data[:, test:]
 
     env = TradingEnv(train_data, args.initial_invest)
     state_size = env.observation_space.shape
     action_size = env.action_space.n
-    agent = DQNAgent(state_size, action_size)
+    agent = DQNAgent(state_size, action_size, args.mode)
     scaler = get_scaler(env)
 
     portfolio_value = []
@@ -71,8 +72,8 @@ if __name__ == '__main__':
             state = next_state
             if done:
 
-                if args.mode == "test" and e % 100 == 0:
-                    plot_all(stock_name, daily_portfolio_value, env, test + 1)
+                # if args.mode == "test" and e % 100 == 0:
+                    # plot_all(stock_name, daily_portfolio_value, env, test + 1)
                 daily_portfolio_value = []
                 print("episode: {}/{}, episode end value: {}".format(
                     e + 1, args.episode, info['cur_val']))
