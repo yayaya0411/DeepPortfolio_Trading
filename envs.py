@@ -90,16 +90,15 @@ class TradingEnv(gym.Env):
         action_combo = list(map(list, itertools.product([0, 1, 2], repeat=self.n_industry)))
         action_vec = action_combo[action]
 
-        for i, a in enumerate(action_vec):
-            if a == 0:
+        for i, a in enumerate(action_vec): # i means index, a means action
+            if a == 0: # sell
                 for j in range(i, 4 * i):
                     if j < self.n_stock:
                         self.cash_in_hand += self.stock_price[j] * self.stock_owned[j]
                         self.stock_owned[j] = 0
-
                     else:
                         break
-            elif a == 2:
+            elif a == 2: # buy
                 for j in range(i, 4 * i):
                     if j < self.n_stock and self.cash_in_hand > self.stock_price[i] * 200:
                         self.stock_owned[j] += 200  # buy one share
