@@ -24,7 +24,7 @@ class TradingEnv(gym.Env):
 
     def __init__(self, train_data, init_invest=20000):
         # data
-        self.n_industry = 5
+        # self.n_industry = 5
         # self.buy_date = [[] for _ in range(self.n_industry)]
         # self.sell_date = [[] for _ in range(self.n_industry)]
         self.stock_price_history = train_data # round up to integer to reduce state space
@@ -38,7 +38,7 @@ class TradingEnv(gym.Env):
         self.cash_in_hand = None
 
         # action space
-        self.action_space = spaces.Discrete(3 ** self.n_industry)
+        self.action_space = spaces.Discrete(3 ** self.n_stock)
         # self.action_space = spaces.Discrete(3 ** self.n_stock)
 
         # observation space: give estimates in order to sample and build scaler
@@ -87,7 +87,7 @@ class TradingEnv(gym.Env):
 
     def _trade(self, action):
 
-        action_combo = list(map(list, itertools.product([0, 1, 2], repeat=self.n_industry)))
+        action_combo = list(map(list, itertools.product([0, 1, 2], repeat=self.n_stock)))
         action_vec = action_combo[action]
 
         for i, a in enumerate(action_vec): # i means index, a means action

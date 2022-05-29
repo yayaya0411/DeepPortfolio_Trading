@@ -1,4 +1,13 @@
-.idea/
+# running cache  
 __pycache__/
-/data/all_set_minute.csvk
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# script cache
+portfolio_val/
+visualization/
+weights/
+
+# global files
 desktop.ini

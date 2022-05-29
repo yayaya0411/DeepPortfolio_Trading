@@ -8,8 +8,8 @@ from envs import TradingEnv
 from agent import DQNAgent
 from utils import get_data, get_scaler, maybe_make_dir, plot_all
 
-stock_name = "0050_2018_2020"
-stock_table = "0050_table"
+stock_name = "tech"
+stock_table = "tech_table"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -17,7 +17,7 @@ if __name__ == '__main__':
                         help='number of episode to run')
     parser.add_argument('-b', '--batch_size', type=int, default=32,
                         help='batch size for experience replay')
-    parser.add_argument('-i', '--initial_invest', type=int, default=100000,
+    parser.add_argument('-i', '--initial_invest', type=int, default=1000000,
                         help='initial investment amount')
     parser.add_argument('-m', '--mode', type=str, required=True,
                         help='either "train" or "test"')
@@ -30,11 +30,7 @@ if __name__ == '__main__':
     timestamp = time.strftime('%Y%m%d%H%M')
 
     data = get_data(stock_name, stock_table)
-    # print(data.shape[1])
     train = round(data.shape[1]*0.70)
-    # test = round(data.shape[1]*0.99)
-    # train = 979
-    # test = 979
     # print("train:{}, test:{}".format(data[:, train-1], data[:, test]))
     test = train+1
     train_data = data[:, :test]
