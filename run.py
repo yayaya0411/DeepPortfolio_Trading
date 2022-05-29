@@ -13,14 +13,10 @@ stock_table = "tech_table"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-e', '--episode', type=int, default=500,
-                        help='number of episode to run')
-    parser.add_argument('-b', '--batch_size', type=int, default=32,
-                        help='batch size for experience replay')
-    parser.add_argument('-i', '--initial_invest', type=int, default=1000000,
-                        help='initial investment amount')
-    parser.add_argument('-m', '--mode', type=str, required=True,
-                        help='either "train" or "test"')
+    parser.add_argument('-e', '--episode', type=int, default=50, help='number of episode to run')
+    parser.add_argument('-b', '--batch_size', type=int, default=32, help='batch size for experience replay')
+    parser.add_argument('-i', '--initial_invest', type=int, default=1000000, help='initial investment amount')
+    parser.add_argument('-m', '--mode', type=str, required=True, help='either "train" or "test"')
     parser.add_argument('-w', '--weights', type=str, help='a trained model weights')
     args = parser.parse_args()
 
@@ -31,7 +27,6 @@ if __name__ == '__main__':
 
     data = get_data(stock_name, stock_table)
     train = round(data.shape[1]*0.70)
-    # print("train:{}, test:{}".format(data[:, train-1], data[:, test]))
     test = train+1
     train_data = data[:, :test]
     test_data = data[:, test:]

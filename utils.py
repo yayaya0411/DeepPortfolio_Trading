@@ -23,7 +23,6 @@ def get_data(stock_name, stock_tabel):
 def get_scaler(env):
     """ Takes a env and returns a scaler for its observation space """
     low = [0] * (env.n_stock * 2 + 1)
-
     high = []
     max_price = env.stock_price_history.max(axis=1)
     min_price = env.stock_price_history.min(axis=1)

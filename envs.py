@@ -39,7 +39,6 @@ class TradingEnv(gym.Env):
 
         # action space
         self.action_space = spaces.Discrete(3 ** self.n_stock)
-        # self.action_space = spaces.Discrete(3 ** self.n_stock)
 
         # observation space: give estimates in order to sample and build scaler
         stock_max_price = self.stock_price_history.max(axis=1)
