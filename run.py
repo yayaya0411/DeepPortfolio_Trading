@@ -8,8 +8,11 @@ from envs import TradingEnv
 from agent import DQNAgent
 from utils import get_data, get_scaler, maybe_make_dir, plot_all
 
-stock_name = "tech"
-stock_table = "tech_table"
+# stock_name = "tech"
+# stock_table = "tech_table"
+
+stock_name = "financial"
+stock_table = "financial_table"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -63,8 +66,8 @@ if __name__ == '__main__':
             state = next_state
             if done:
 
-                # if args.mode == "test" and e % 100 == 0:
-                    # plot_all(stock_name, daily_portfolio_value, env, test + 1)
+                if args.mode == "test":
+                    plot_all(stock_name, daily_portfolio_value, env, test + 1)
                 daily_portfolio_value = []
                 print("episode: {}/{}, episode end value: {}".format(
                     e + 1, args.episode, info['cur_val']))
