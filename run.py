@@ -11,8 +11,6 @@ from utils import get_data, get_scaler, maybe_make_dir, plot_all
 # stock_name = "tech"
 # stock_table = "tech_table"
 
-stock_name = "financial"
-stock_table = "financial_table"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -21,11 +19,14 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--initial_invest', type=int, default=1000000, help='initial investment amount')
     parser.add_argument('-m', '--mode', type=str, required=True, help='either "train" or "test"')
     parser.add_argument('-w', '--weights', type=str, help='a trained model weights')
+    parser.add_argument('-s', '--stock', type=str, required=True, default='tech', help='stock portfolios')
     args = parser.parse_args()
 
     maybe_make_dir('weights')
     maybe_make_dir('portfolio_val')
 
+    stock_name = args.stock
+    stock_table = f"{stock_name}_table"
     timestamp = time.strftime('%Y%m%d%H%M')
 
     data = get_data(stock_name, stock_table)
@@ -46,11 +47,13 @@ if __name__ == '__main__':
         # remake the env with test data
         env = TradingEnv(test_data, args.initial_invest)
         # load trained weights
-        agent.load(args.weights)
+        agent.load(f'weights/{stock_name}_{args.weights}-dqn.h5')
         # when test, the timestamp is same as time when weights was trained
-        timestamp = re.findall(r'\d{12}', args.weights)[0]
+        # timestamp = stock_name + '_' +re.findall(r'\d{12}', args.weights)[0]
         # daily_portfolio_value = [env.init_invest]
         daily_portfolio_value = []
+        
+        args.episode = 1
 
     for e in range(args.episode):
         state = env.reset()
@@ -65,22 +68,20 @@ if __name__ == '__main__':
                 daily_portfolio_value.append(info['cur_val'])
             state = next_state
             if done:
-
                 if args.mode == "test":
                     plot_all(stock_name, daily_portfolio_value, env, test + 1)
                 daily_portfolio_value = []
-                print("episode: {}/{}, episode end value: {}".format(
-                    e + 1, args.episode, info['cur_val']))
+                print("episode: {}/{}, episode end value: {}".format(e + 1, args.episode, info['cur_val']))
                 portfolio_value.append(info['cur_val']) # append episode end portfolio value
-
                 break
+            
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
         if args.mode == 'train' and (e + 1) % 10 == 0:  # checkpoint weights
             agent.save('weights/{}-dqn.h5'.format(timestamp))
-
-    print("mean portfolio_val:", np.mean(portfolio_value))
-    print("median portfolio_val:", np.median(portfolio_value))
+    if args.mode == 'train':
+        print("mean portfolio_val:", np.mean(portfolio_value))
+        print("median portfolio_val:", np.median(portfolio_value))
     # save portfolio value history to disk
     with open('portfolio_val/{}-{}.p'.format(timestamp, args.mode), 'wb') as fp:
         pickle.dump(portfolio_value, fp)
