@@ -3,7 +3,10 @@ import time
 import numpy as np
 import argparse
 import re
+import logging
+import tqdm
 
+from datetime import datetime
 from envs import TradingEnv
 from agent import DQNAgent
 from utils import get_data, get_scaler, maybe_make_dir, plot_all
@@ -22,8 +25,11 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--stock', type=str, required=True, default='tech', help='stock portfolios')
     args = parser.parse_args()
 
+    maybe_make_dir('logs')
     maybe_make_dir('weights')
     maybe_make_dir('portfolio_val')
+
+
 
     stock_name = args.stock
     stock_table = f"{stock_name}_table"
@@ -34,6 +40,25 @@ if __name__ == '__main__':
     test = train+1
     train_data = data[:, :test]
     test_data = data[:, test:]
+    print(train_data)
+    # train_date = [datetime.strptime(x,'%Y%m%d').strftime('%Y/%m/%d') for x in train_data.index]
+    # test_date = [datetime.strptime(x,'%Y%m%d').strftime('%Y/%m/%d') for x in test_data.index]
+
+    print(train_data.shape)
+    print(test_data.shape)
+
+    # configure logging
+    logging.basicConfig(filename=f'logs/{args.mode}_{stock_name}_{timestamp}.log', filemode='w',
+                        format='[%(asctime)s.%(msecs)03d %(filename)s:%(lineno)3s] %(message)s', 
+                        datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)
+    logging.info(f'Mode:                     {args.mode}')
+    logging.info(f'Training Object:          {stock_name} portfolio')
+    # logging.info(f'Trading Period:           {train_date[0]} ~ {train_date[-1]}, {len(train_date)} days')
+    # logging.info(f'Test Period:              {test_date[0]} ~ {test_date[-1]}, {len(train_date)} days')
+    logging.info(f'Training Episode:         {args.episode}')
+    logging.info(f'Model Name:               {args.weights}')
+    logging.info(f'Initial Invest Value: ${args.initial_invest:,}')
+    logging.info(f'='*30)
 
     env = TradingEnv(train_data, args.initial_invest)
     state_size = env.observation_space.shape
@@ -43,6 +68,7 @@ if __name__ == '__main__':
 
     portfolio_value = []
 
+    logging.info(f'{args.mode} start')
     if args.mode == 'test':
         # remake the env with test data
         env = TradingEnv(test_data, args.initial_invest)
@@ -55,11 +81,13 @@ if __name__ == '__main__':
         
         args.episode = 1
 
-    for e in range(args.episode):
+    for e in tqdm.tqdm(range(args.episode)):
         state = env.reset()
         state = scaler.transform([state])
+        action_list=[]
         for time in range(env.n_step):
             action = agent.act(state)
+            action_list.append(action)
             next_state, reward, done, info = env.step(action)
             next_state = scaler.transform([next_state])
             if args.mode == 'train':
@@ -70,15 +98,16 @@ if __name__ == '__main__':
             if done:
                 if args.mode == "test":
                     plot_all(stock_name, daily_portfolio_value, env, test + 1)
+                print(action_list)    
                 daily_portfolio_value = []
-                print("episode: {}/{}, episode end value: {}".format(e + 1, args.episode, info['cur_val']))
+                # logging.info("episode: {}/{}, episode end value: {}".format(e + 1, args.episode, info['cur_val']))
+                logging.info(f"episode: {e+1}/{args.episode}, episode end value: {info['cur_val']}")
                 portfolio_value.append(info['cur_val']) # append episode end portfolio value
                 break
-            
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
-        if args.mode == 'train' and (e + 1) % 10 == 0:  # checkpoint weights
-            agent.save('weights/{}-dqn.h5'.format(timestamp))
+        if args.mode == 'train' and (e+1) % 10 == 0:  # checkpoint weights
+            agent.save(f'weights/{stock_name}_{timestamp}-ep{e+1}-dqn.h5')
     if args.mode == 'train':
         print("mean portfolio_val:", np.mean(portfolio_value))
         print("median portfolio_val:", np.median(portfolio_value))
@@ -86,3 +115,4 @@ if __name__ == '__main__':
     with open('portfolio_val/{}-{}.p'.format(timestamp, args.mode), 'wb') as fp:
         pickle.dump(portfolio_value, fp)
 
+    logging.info(f'{args.mode} ending')

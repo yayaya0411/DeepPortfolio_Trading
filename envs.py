@@ -91,16 +91,46 @@ class TradingEnv(gym.Env):
 
         for i, a in enumerate(action_vec): # i means index, a means action
             if a == 0: # sell
-                for j in range(i, 4 * i):
+                # for j in range(i, 4 * i):
+                for j in range(i, len(action_vec)):
                     if j < self.n_stock:
                         self.cash_in_hand += self.stock_price[j] * self.stock_owned[j]
                         self.stock_owned[j] = 0
                     else:
                         break
             elif a == 2: # buy
-                for j in range(i, 4 * i):
+                # for j in range(i, 4 * i):
+                for j in range(i, len(action_vec)):
                     if j < self.n_stock and self.cash_in_hand > self.stock_price[i] * 200:
                         self.stock_owned[j] += 200  # buy one share
                         self.cash_in_hand -= self.stock_price[j] * 200
                     else:
                         break
+
+
+        # all combo to sell(0), hold(1), or buy(2) stocks
+        # action_combo = list(map(list, itertools.product([0, 1, 2], repeat=self.n_stock)))
+        # action_vec = action_combo[action]
+
+        # # one pass to get sell/buy index
+        # sell_index = []
+        # buy_index = []
+        # for i, a in enumerate(action_vec):
+        #     if a == 0:
+        #         sell_index.append(i)
+        #     elif a == 2:
+        #         buy_index.append(i)
+        # # two passes: sell first, then buy; might be naive in real-world settings
+        # if sell_index:
+        #     for i in sell_index:
+        #         self.cash_in_hand += self.stock_price[i] * self.stock_owned[i]
+        #         self.stock_owned[i] = 0
+        # if buy_index:
+        #     can_buy = True
+        #     while can_buy:
+        #         for i in buy_index:
+        #             if self.cash_in_hand > self.stock_price[i]:
+        #                 self.stock_owned[i] += 100 # buy one share
+        #                 self.cash_in_hand -= self.stock_price[i]
+        #             else:
+        #                 can_buy = False    

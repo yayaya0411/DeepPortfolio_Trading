@@ -12,7 +12,8 @@ class DQNAgent(object):
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
         self.gamma = 0.95  # discount rate
-        self.epsilon = 1.0  # exploration rate
+        # self.epsilon = 1.0  # exploration rate
+        self.epsilon = 0.10  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
         self.model = mlp(state_size, action_size)
@@ -22,9 +23,11 @@ class DQNAgent(object):
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        if self.mode == 'train':
-            if np.random.rand() <= self.epsilon:
-                return random.randrange(self.action_size)
+        # if self.mode == 'train':
+        #     if np.random.rand() <= self.epsilon:
+        #         return random.randrange(self.action_size)
+        if np.random.rand() <= self.epsilon:
+            return random.randrange(self.action_size)
         act_values = self.model.predict(state)
         return np.argmax(act_values[0])  # returns action
 
@@ -50,8 +53,8 @@ class DQNAgent(object):
 
         self.model.fit(states, target_f, epochs=1, verbose=0)
 
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
+        # if self.epsilon > self.epsilon_min:
+        #     self.epsilon *= self.epsilon_decay
 
     def load(self, name):
         self.model.load_weights(name)

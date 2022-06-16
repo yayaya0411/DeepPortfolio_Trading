@@ -5,9 +5,10 @@ __pycache__/
 .idea/
 
 # script cache
-portfolio_val/
-visualization/
-weights/
+portfolio_val/*
+visualization/*
+weights/*
+logs/
 
 # global files
 desktop.ini
