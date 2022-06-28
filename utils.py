@@ -5,20 +5,63 @@ from matplotlib import pyplot as plt
 import h5py
 import pandas as pd
 import numpy as np
+
 from sklearn.preprocessing import StandardScaler
 import matplotlib.dates as mdate
 import matplotlib.dates as mdates
 
 
-def get_data(stock_name, stock_tabel):
+
+def get_data(stock_name, stock_tabel, window):
     """ Returns a 3 x n_step array """
 
     industry = pd.read_csv('data/{}.csv'.format(stock_tabel))["code"].astype("str")
     data = pd.read_csv('data/{}.csv'.format(stock_name)).drop(columns="DateTime")
     data = data[industry].astype("float")
-    data = np.array(data.T)
-    return data
+    if window:
+        # create training 
+        X = []
+        for i in range(time_slide, len(data)): 
+            tmp = data[i-time_slide:i]
+            # tmp = normalization(tmp)
+            X.append(tmp)
+    else:
+        X = np.array(data.T)
+    return X
 
+def input_build(new_x, y, ori_y):
+    train_x = []
+    train_y = []
+    test_x = []
+    test_y = []
+    # val_x = []
+    # val_y = []
+    
+    tr_va = int(len(new_x)*8/10)
+    y = list(y)
+
+    # original add all data into training
+    train_x = train_x + new_x[:tr_va]
+    train_y = train_y + y[:tr_va]
+    # val_x = val_x + new_x[tr_va: va_te]
+    # val_y = val_y + y[tr_va: va_te]
+    test_x = test_x + new_x[tr_va:]
+    test_y = test_y +y[tr_va:]
+
+    # for test scaler y
+    ori_y_train = ori_y[:tr_va]
+    ori_y = ori_y[tr_va:]
+
+    return np.array(train_x), np.array(train_y), np.array(test_x), np.array(test_y), ori_y_train, ori_y
+
+# create training window
+def training_windows(df,time_slide):
+    X=[]
+    for i in range(time_slide, len(df)): 
+        tmp = df[i-time_slide:i]
+        # tmp = normalization(tmp)
+        X.append(tmp)
+    return X    
 
 def get_scaler(env):
     """ Takes a env and returns a scaler for its observation space """

@@ -21,6 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--batch_size', type=int, default=32, help='batch size for experience replay')
     parser.add_argument('-i', '--initial_invest', type=int, default=1000000, help='initial investment amount')
     parser.add_argument('-m', '--mode', type=str, required=True, help='either "train" or "test"')
+    parser.add_argument('-t', '--model_type', type=str, required=True, help='"dnn", "conv1d" or "lstm"')
     parser.add_argument('-w', '--weights', type=str, help='a trained model weights')
     parser.add_argument('-s', '--stock', type=str, required=True, default='tech', help='stock portfolios')
     args = parser.parse_args()
@@ -29,20 +30,21 @@ if __name__ == '__main__':
     maybe_make_dir('weights')
     maybe_make_dir('portfolio_val')
 
-
-
+    slide = 20
+    if args.model_type in ['conv1d','lstm']:
+        window = True
+    else:
+        window = False
+        
     stock_name = args.stock
     stock_table = f"{stock_name}_table"
     timestamp = time.strftime('%Y%m%d%H%M')
 
-    data = get_data(stock_name, stock_table)
+    data = get_data(stock_name, stock_table, window)
     train = round(data.shape[1]*0.70)
     test = train+1
     train_data = data[:, :test]
     test_data = data[:, test:]
-    print(train_data)
-    # train_date = [datetime.strptime(x,'%Y%m%d').strftime('%Y/%m/%d') for x in train_data.index]
-    # test_date = [datetime.strptime(x,'%Y%m%d').strftime('%Y/%m/%d') for x in test_data.index]
 
     print(train_data.shape)
     print(test_data.shape)
@@ -52,18 +54,19 @@ if __name__ == '__main__':
                         format='[%(asctime)s.%(msecs)03d %(filename)s:%(lineno)3s] %(message)s', 
                         datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)
     logging.info(f'Mode:                     {args.mode}')
+    logging.info(f'Model Type:               {args.model_type}')
     logging.info(f'Training Object:          {stock_name} portfolio')
     # logging.info(f'Trading Period:           {train_date[0]} ~ {train_date[-1]}, {len(train_date)} days')
     # logging.info(f'Test Period:              {test_date[0]} ~ {test_date[-1]}, {len(train_date)} days')
+    logging.info(f'Model Weights:            {args.weights}')
     logging.info(f'Training Episode:         {args.episode}')
-    logging.info(f'Model Name:               {args.weights}')
-    logging.info(f'Initial Invest Value: ${args.initial_invest:,}')
+    logging.info(f'Initial Invest Value:    ${args.initial_invest:,}')
     logging.info(f'='*30)
 
     env = TradingEnv(train_data, args.initial_invest)
     state_size = env.observation_space.shape
     action_size = env.action_space.n
-    agent = DQNAgent(state_size, action_size, args.mode)
+    agent = DQNAgent(state_size, action_size, args.mode, args.model_type)
     scaler = get_scaler(env)
 
     portfolio_value = []
@@ -73,7 +76,7 @@ if __name__ == '__main__':
         # remake the env with test data
         env = TradingEnv(test_data, args.initial_invest)
         # load trained weights
-        agent.load(f'weights/{stock_name}_{args.weights}-dqn.h5')
+        agent.load(f'weights/{stock_name}_{args.model_type}-{args.weights}.h5')
         # when test, the timestamp is same as time when weights was trained
         # timestamp = stock_name + '_' +re.findall(r'\d{12}', args.weights)[0]
         # daily_portfolio_value = [env.init_invest]
@@ -98,7 +101,7 @@ if __name__ == '__main__':
             if done:
                 if args.mode == "test":
                     plot_all(stock_name, daily_portfolio_value, env, test + 1)
-                print(action_list)    
+                print(len(action_list),action_list)    
                 daily_portfolio_value = []
                 # logging.info("episode: {}/{}, episode end value: {}".format(e + 1, args.episode, info['cur_val']))
                 logging.info(f"episode: {e+1}/{args.episode}, episode end value: {info['cur_val']}")
@@ -107,7 +110,7 @@ if __name__ == '__main__':
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
         if args.mode == 'train' and (e+1) % 10 == 0:  # checkpoint weights
-            agent.save(f'weights/{stock_name}_{timestamp}-ep{e+1}-dqn.h5')
+            agent.save(f'weights/{stock_name}_{args.model_type}-{timestamp}-ep{e+1}.h5')
     if args.mode == 'train':
         print("mean portfolio_val:", np.mean(portfolio_value))
         print("median portfolio_val:", np.median(portfolio_value))

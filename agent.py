@@ -1,13 +1,13 @@
 from collections import deque
 import random
 import numpy as np
-from model import mlp
+from model import dnn, conv1d, lstm
 
 
 class DQNAgent(object):
     """ A simple Deep Q agent """
 
-    def __init__(self, state_size, action_size, mode):
+    def __init__(self, state_size, action_size, mode, model_type):
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
@@ -16,18 +16,23 @@ class DQNAgent(object):
         self.epsilon = 0.10  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
-        self.model = mlp(state_size, action_size)
+        if model_type == 'dnn':
+            self.model = dnn(state_size, action_size)
+        if model_type == 'conv1d':
+            self.model = conv1d(state_size, action_size)
+        if model_type == 'lstm':
+            self.model = lstm(state_size, action_size)
         self.mode=mode
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        # if self.mode == 'train':
-        #     if np.random.rand() <= self.epsilon:
-        #         return random.randrange(self.action_size)
-        if np.random.rand() <= self.epsilon:
-            return random.randrange(self.action_size)
+        if self.mode == 'train':
+            if np.random.rand() <= self.epsilon:
+                return random.randrange(self.action_size)
+        # if np.random.rand() <= self.epsilon:
+        #     return random.randrange(self.action_size)
         act_values = self.model.predict(state)
         return np.argmax(act_values[0])  # returns action
 
