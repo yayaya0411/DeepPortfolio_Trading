@@ -11,22 +11,25 @@ import matplotlib.dates as mdate
 import matplotlib.dates as mdates
 
 
+# create training window
+def training_windows(df,time_slide):
+    X=[]
+    for i in range(time_slide, len(df)): 
+        tmp = df[i-time_slide:i]
+        # tmp = normalization(tmp)
+        X.append(tmp)
+    return X    
 
-def get_data(stock_name, stock_tabel, window):
+def get_data(stock_name, stock_tabel):
     """ Returns a 3 x n_step array """
-
     industry = pd.read_csv('data/{}.csv'.format(stock_tabel))["code"].astype("str")
     data = pd.read_csv('data/{}.csv'.format(stock_name)).drop(columns="DateTime")
     data = data[industry].astype("float")
-    if window:
-        # create training 
-        X = []
-        for i in range(time_slide, len(data)): 
-            tmp = data[i-time_slide:i]
-            # tmp = normalization(tmp)
-            X.append(tmp)
-    else:
-        X = np.array(data.T)
+    data = data.T
+    # if window:
+    #     X = training_windows(data, slide)
+    # else:
+    X = np.array(data)
     return X
 
 def input_build(new_x, y, ori_y):
@@ -54,14 +57,6 @@ def input_build(new_x, y, ori_y):
 
     return np.array(train_x), np.array(train_y), np.array(test_x), np.array(test_y), ori_y_train, ori_y
 
-# create training window
-def training_windows(df,time_slide):
-    X=[]
-    for i in range(time_slide, len(df)): 
-        tmp = df[i-time_slide:i]
-        # tmp = normalization(tmp)
-        X.append(tmp)
-    return X    
 
 def get_scaler(env):
     """ Takes a env and returns a scaler for its observation space """

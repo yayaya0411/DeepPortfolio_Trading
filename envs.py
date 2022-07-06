@@ -22,7 +22,7 @@ class TradingEnv(gym.Env):
     - if buying multiple stock, equally distribute cash in hand and then utilize the balance
   """
 
-    def __init__(self, train_data, init_invest=20000):
+    def __init__(self, train_data, model, init_invest=20000, slide = 20):
         # data
         # self.n_industry = 5
         # self.buy_date = [[] for _ in range(self.n_industry)]
@@ -32,6 +32,8 @@ class TradingEnv(gym.Env):
 
         # instance attributes
         self.init_invest = init_invest
+        self.slide = slide
+        self.model = model
         self.cur_step = None
         self.stock_owned = None
         self.stock_price = None
@@ -45,7 +47,9 @@ class TradingEnv(gym.Env):
         stock_range = [[0, init_invest * 2 // mx] for mx in stock_max_price]
         price_range = [[0, mx] for mx in stock_max_price]
         cash_in_hand_range = [[0, init_invest * 2]]
-        self.observation_space = spaces.MultiDiscrete(stock_range + price_range + cash_in_hand_range)
+        # self.observation_space = spaces.MultiDiscrete(stock_range + price_range + cash_in_hand_range)
+        print('\nobservation space',self.observation_space)
+        # self.observation_space = ()
 
         # seed and start
         self._seed()
@@ -59,8 +63,11 @@ class TradingEnv(gym.Env):
         self.cur_step = 0
         self.stock_owned = [0] * self.n_stock
         self.stock_price = self.stock_price_history[:, self.cur_step]
+
+        # print(len(self.stock_price_history[:, self.cur_step]),self.stock_price_history[:, self.cur_step])
+
         self.cash_in_hand = self.init_invest
-        return self._get_obs()
+        return self._get_obs(self.model)
 
     def _step(self, action):
         assert self.action_space.contains(action)
@@ -72,13 +79,25 @@ class TradingEnv(gym.Env):
         reward = cur_val - prev_val
         done = self.cur_step == self.n_step - 1
         info = {'cur_val': cur_val}
-        return self._get_obs(), reward, done, info
+        return self._get_obs(self.model), reward, done, info
 
-    def _get_obs(self):
-        obs = []
-        obs.extend(self.stock_owned)
-        obs.extend(list(self.stock_price))
-        obs.append(self.cash_in_hand)
+    def _get_obs(self, model):
+        print(model)
+        if model in ['conv1d, lstm']:
+            print('go window')
+            if self.cur_step < self.slide:
+                obs = pd.DataFrame()
+                for i in range(0,(self.slide-self.cur_step)-1):
+                    obs = pd.concat([obs, self.stock_price_history[0]],axis=1)
+                obs = pd.concat([obs, self.stock_price_history[self.cur_step]],axis=1)
+            else:
+                obs = self.stock_price_history.iloc[:, (self.cur_step-self.slide):self.cur_step]
+        else:   # dnn 
+            print('no window')
+            obs = []
+            obs.extend(self.stock_owned)
+            obs.extend(list(self.stock_price))
+            obs.append(self.cash_in_hand)
         return obs
 
     def _get_val(self):

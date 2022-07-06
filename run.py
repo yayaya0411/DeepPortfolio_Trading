@@ -40,14 +40,14 @@ if __name__ == '__main__':
     stock_table = f"{stock_name}_table"
     timestamp = time.strftime('%Y%m%d%H%M')
 
-    data = get_data(stock_name, stock_table, window)
-    train = round(data.shape[1]*0.70)
-    test = train+1
-    train_data = data[:, :test]
-    test_data = data[:, test:]
-
-    print(train_data.shape)
-    print(test_data.shape)
+    # data = get_data(stock_name, stock_table, window, slide)
+    data = get_data(stock_name, stock_table)
+    # train = round(data.shape[1]*0.70)
+    # test = train+1
+    # train_data = data[:, :test]
+    # test_data = data[:, test:]
+    # print(train_data.shape)
+    # print(test_data.shape)
 
     # configure logging
     logging.basicConfig(filename=f'logs/{args.mode}_{stock_name}_{timestamp}.log', filemode='w',
@@ -63,7 +63,9 @@ if __name__ == '__main__':
     logging.info(f'Initial Invest Value:    ${args.initial_invest:,}')
     logging.info(f'='*30)
 
-    env = TradingEnv(train_data, args.initial_invest)
+    # env = TradingEnv(train_data, args.initial_invest)
+    env = TradingEnv(data, args.model_type, args.initial_invest, slide)
+    print('state\n',env.reset(),'\n')
     state_size = env.observation_space.shape
     action_size = env.action_space.n
     agent = DQNAgent(state_size, action_size, args.mode, args.model_type)
@@ -74,7 +76,8 @@ if __name__ == '__main__':
     logging.info(f'{args.mode} start')
     if args.mode == 'test':
         # remake the env with test data
-        env = TradingEnv(test_data, args.initial_invest)
+        # env = TradingEnv(test_data, args.initial_invest)
+        env = TradingEnv(data, args.model_type, args.initial_invest,slide)
         # load trained weights
         agent.load(f'weights/{stock_name}_{args.model_type}-{args.weights}.h5')
         # when test, the timestamp is same as time when weights was trained
