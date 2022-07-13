@@ -1,6 +1,6 @@
 # import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, LSTM, Conv1D
+from tensorflow.keras.layers import Dense, Dropout, LSTM, Conv1D,Flatten
 from tensorflow.keras.optimizers import Adam
 
 
@@ -27,11 +27,11 @@ def conv1d(n_obs, n_action):
 
 def lstm(n_obs, n_action):
     model = Sequential()
-    model.add(LSTM(64,return_sequences=True,input_shape=(n_obs[0],n_obs[1])))
+    model.add(LSTM(64,return_sequences=True,input_shape=(20,10)))
     model.add(LSTM(128, dropout=0.2, return_sequences=True))
-    model.add(Dense(n_action, activation="softmax"))
     model.add(Flatten())
     model.add(Dropout(0.3))
+    model.add(Dense(n_action, activation="softmax"))
     model.compile(loss="mse", optimizer=Adam(lr=0.001))
     print(model.summary())
     return model

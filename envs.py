@@ -1,6 +1,7 @@
 import gym
 from gym import spaces
 from gym.utils import seeding
+import pandas as pd
 import numpy as np
 import itertools
 
@@ -48,9 +49,9 @@ class TradingEnv(gym.Env):
         price_range = [[0, mx] for mx in stock_max_price]
         cash_in_hand_range = [[0, init_invest * 2]]
         # self.observation_space = spaces.MultiDiscrete(stock_range + price_range + cash_in_hand_range)
-        print('\nobservation space',self.observation_space)
+        # print('\nobservation space',self.observation_space)
         # self.observation_space = ()
-
+        self.observation_space = 200 # stocks * slide
         # seed and start
         self._seed()
         self._reset()
@@ -83,22 +84,31 @@ class TradingEnv(gym.Env):
 
     def _get_obs(self, model):
         print(model)
-        if model in ['conv1d, lstm']:
+        if model in ['conv1d', 'lstm']:
             print('go window')
             if self.cur_step < self.slide:
-                obs = pd.DataFrame()
-                for i in range(0,(self.slide-self.cur_step)-1):
-                    obs = pd.concat([obs, self.stock_price_history[0]],axis=1)
-                obs = pd.concat([obs, self.stock_price_history[self.cur_step]],axis=1)
+                print(f'in slide cur_step:{self.cur_step} slide:{self.slide}')
+                obs = self.stock_price_history[:, :self.cur_step]
+                # obs = []
+                for i in range(0,(self.slide-self.cur_step)):
+                    obs.append(self.stock_price_history[:,0])
+                # obs.append(self.stock_price_history[:,self.cur_step])
             else:
-                obs = self.stock_price_history.iloc[:, (self.cur_step-self.slide):self.cur_step]
+                print(f'out slide {self.cur_step} {self.slide}')
+                obs = self.stock_price_history[:, (self.cur_step-self.slide):self.cur_step]
+            obs = np.array(obs)
+            obs = np.reshape(obs, (1, obs.shape[0], obs.shape[1]))
+            print(f'obs shape ({obs.shape})')
+            print(obs)
+            return np.array(obs)
         else:   # dnn 
             print('no window')
             obs = []
             obs.extend(self.stock_owned)
             obs.extend(list(self.stock_price))
             obs.append(self.cash_in_hand)
-        return obs
+        # print(type(obs),'\nobs shape\n',len(obs),'\n',obs)
+            return obs
 
     def _get_val(self):
         return np.sum(self.stock_owned * self.stock_price) + self.cash_in_hand

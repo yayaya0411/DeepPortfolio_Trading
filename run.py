@@ -65,8 +65,8 @@ if __name__ == '__main__':
 
     # env = TradingEnv(train_data, args.initial_invest)
     env = TradingEnv(data, args.model_type, args.initial_invest, slide)
-    print('state\n',env.reset(),'\n')
-    state_size = env.observation_space.shape
+    # state_size = env.observation_space.shape
+    state_size = env.observation_space
     action_size = env.action_space.n
     agent = DQNAgent(state_size, action_size, args.mode, args.model_type)
     scaler = get_scaler(env)
@@ -89,13 +89,13 @@ if __name__ == '__main__':
 
     for e in tqdm.tqdm(range(args.episode)):
         state = env.reset()
-        state = scaler.transform([state])
+        # state = scaler.transform([state])
         action_list=[]
         for time in range(env.n_step):
             action = agent.act(state)
             action_list.append(action)
             next_state, reward, done, info = env.step(action)
-            next_state = scaler.transform([next_state])
+            # next_state = scaler.transform([next_state])
             if args.mode == 'train':
                 agent.remember(state, action, reward, next_state, done)
             if args.mode == "test":
