@@ -82,8 +82,8 @@ def maybe_make_dir(directory):
         os.makedirs(directory)
 
 
-def buy_and_hold_benchmark(stock_name, init_invest, n, test):
-    df = pd.read_csv('./data/{}.csv'.format(stock_name)).iloc[test:, :]
+def buy_and_hold_benchmark(stock_name, init_invest, n):
+    df = pd.read_csv('./data/{}.csv'.format(stock_name))
     dates = df['DateTime'].astype("str")
     per_num_holding = init_invest // n
     num_holding = per_num_holding // df.iloc[0, 1:]
@@ -93,17 +93,22 @@ def buy_and_hold_benchmark(stock_name, init_invest, n, test):
     return dates, buy_and_hold_portfolio_values, buy_and_hold_return
 
 
-def plot_all(stock_name, daily_portfolio_value, env, test):
+def plot_all(stock_name, daily_portfolio_value, env):
     """combined plots of plot_portfolio_transaction_history and plot_portfolio_performance_comparison"""
     fig, ax = plt.subplots(1, 1, figsize=(16, 4), dpi=100)
 
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y%m%d'))
     plt.gca().xaxis.set_major_locator(mdates.DayLocator())
 
-    dates, buy_and_hold_portfolio_values, buy_and_hold_return = buy_and_hold_benchmark(stock_name, env.init_invest, env.n_stock, test)
+    dates, buy_and_hold_portfolio_values, buy_and_hold_return = buy_and_hold_benchmark(stock_name, env.init_invest, env.n_stock)
     agent_return = daily_portfolio_value[-1] - env.init_invest
     ax.set_title('DQN vs. Buy and Hold')
     dates = [datetime.strptime(d, '%Y%m%d').date() for d in dates]
+    ###
+    dates = dates[:-1]
+    buy_and_hold_portfolio_values = buy_and_hold_portfolio_values[:-1]
+    print(f'dates:     {len(dates)} \ndaily value:{len(daily_portfolio_value)}\nBH value:{len(buy_and_hold_portfolio_values)}')
+    ###
     ax.plot(dates, daily_portfolio_value, color='green', label=f'DQN Total Return: ${agent_return:.2f}')
     ax.plot(dates, buy_and_hold_portfolio_values, color='blue', label=f'{stock_name} Buy and Hold Total Return: ${buy_and_hold_return:.2f}')
     ax.set_ylabel('Portfolio Value')

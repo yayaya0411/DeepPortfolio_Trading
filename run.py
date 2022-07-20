@@ -37,7 +37,8 @@ if __name__ == '__main__':
         window = False
         
     stock_name = args.stock
-    stock_table = f"{stock_name}_table"
+    # stock_table = f"{stock_name}_table"
+    stock_table = f"{stock_name.split('_')[0]}_table"
     timestamp = time.strftime('%Y%m%d%H%M')
 
     # data = get_data(stock_name, stock_table, window, slide)
@@ -50,9 +51,13 @@ if __name__ == '__main__':
     # print(test_data.shape)
 
     # configure logging
-    logging.basicConfig(filename=f'logs/{args.mode}_{stock_name}_{timestamp}.log', filemode='w',
-                        format='[%(asctime)s.%(msecs)03d %(filename)s:%(lineno)3s] %(message)s', 
-                        datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)
+    logging.basicConfig(
+        filename=f'logs/{args.mode}_{args.model_type}_{stock_name}_{timestamp}.log', 
+        filemode='w',
+        format='[%(asctime)s.%(msecs)03d %(filename)s:%(lineno)3s] %(message)s', 
+        datefmt='%m/%d/%Y %H:%M:%S', 
+        level=logging.INFO
+        )
     logging.info(f'Mode:                     {args.mode}')
     logging.info(f'Model Type:               {args.model_type}')
     logging.info(f'Training Object:          {stock_name} portfolio')
@@ -79,7 +84,7 @@ if __name__ == '__main__':
         # env = TradingEnv(test_data, args.initial_invest)
         env = TradingEnv(data, args.model_type, args.initial_invest,slide)
         # load trained weights
-        agent.load(f'weights/{stock_name}_{args.model_type}-{args.weights}.h5')
+        agent.load(f'weights/{args.weights}.h5')
         # when test, the timestamp is same as time when weights was trained
         # timestamp = stock_name + '_' +re.findall(r'\d{12}', args.weights)[0]
         # daily_portfolio_value = [env.init_invest]
@@ -103,7 +108,9 @@ if __name__ == '__main__':
             state = next_state
             if done:
                 if args.mode == "test":
-                    plot_all(stock_name, daily_portfolio_value, env, test + 1)
+                    print(f'data shape: {data.shape}')
+                    # print(daily_portfolio_value)
+                    plot_all(stock_name, daily_portfolio_value, env)
                 print(len(action_list),action_list)    
                 daily_portfolio_value = []
                 # logging.info("episode: {}/{}, episode end value: {}".format(e + 1, args.episode, info['cur_val']))

@@ -83,27 +83,31 @@ class TradingEnv(gym.Env):
         return self._get_obs(self.model), reward, done, info
 
     def _get_obs(self, model):
-        print(model)
+        # print(model)
+        obs = []
         if model in ['conv1d', 'lstm']:
-            print('go window')
+            # print('go window')
             if self.cur_step < self.slide:
-                print(f'in slide cur_step:{self.cur_step} slide:{self.slide}')
-                obs = self.stock_price_history[:, :self.cur_step]
-                # obs = []
+                # print(f'in slide cur_step:{self.cur_step} slide:{self.slide} range:{0,(self.slide-self.cur_step)}')
+                # obs = self.stock_price_history[:, :self.cur_step]
                 for i in range(0,(self.slide-self.cur_step)):
                     obs.append(self.stock_price_history[:,0])
+                for i in range(0,self.cur_step + 1):
+                    obs.append(self.stock_price_history[:,i])
                 # obs.append(self.stock_price_history[:,self.cur_step])
             else:
-                print(f'out slide {self.cur_step} {self.slide}')
-                obs = self.stock_price_history[:, (self.cur_step-self.slide):self.cur_step]
+                # print(f'out slide {self.cur_step} {self.slide}')
+                # obs = self.stock_price_history[:, (self.cur_step-self.slide):self.cur_step]
+                for i in range((self.cur_step-self.slide), self.cur_step + 1):
+                    obs.append(self.stock_price_history[:,i])
+            obs = obs[-self.slide:]
             obs = np.array(obs)
             obs = np.reshape(obs, (1, obs.shape[0], obs.shape[1]))
-            print(f'obs shape ({obs.shape})')
-            print(obs)
-            return np.array(obs)
+            # print(f'obs shape ({obs.shape})')
+            # print(obs)
+            return obs
         else:   # dnn 
-            print('no window')
-            obs = []
+            # print('no window')
             obs.extend(self.stock_owned)
             obs.extend(list(self.stock_price))
             obs.append(self.cash_in_hand)
