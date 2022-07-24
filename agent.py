@@ -31,8 +31,6 @@ class DQNAgent(object):
         if self.mode == 'train':
             if np.random.rand() <= self.epsilon:
                 return random.randrange(self.action_size)
-        # if np.random.rand() <= self.epsilon:
-        #     return random.randrange(self.action_size)
         act_values = self.model.predict(state)
         return np.argmax(act_values[0])  # returns action
 
@@ -56,10 +54,10 @@ class DQNAgent(object):
         # make the agent to approximately map the current state to future discounted reward
         target_f[range(batch_size), actions] = target
 
-        self.model.fit(states, target_f, epochs=1, verbose=2)
+        self.model.fit(states, target_f, epochs=1, verbose=1)
 
-        # if self.epsilon > self.epsilon_min:
-        #     self.epsilon *= self.epsilon_decay
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
 
     def load(self, name):
         self.model.load_weights(name)

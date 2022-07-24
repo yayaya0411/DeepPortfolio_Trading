@@ -31,10 +31,10 @@ if __name__ == '__main__':
     maybe_make_dir('portfolio_val')
 
     slide = 20
-    if args.model_type in ['conv1d','lstm']:
-        window = True
-    else:
-        window = False
+    # if args.model_type in ['conv1d','lstm']:
+    #     window = True
+    # else:
+    #     window = False
         
     stock_name = args.stock
     # stock_table = f"{stock_name}_table"
@@ -43,12 +43,6 @@ if __name__ == '__main__':
 
     # data = get_data(stock_name, stock_table, window, slide)
     data = get_data(stock_name, stock_table)
-    # train = round(data.shape[1]*0.70)
-    # test = train+1
-    # train_data = data[:, :test]
-    # test_data = data[:, test:]
-    # print(train_data.shape)
-    # print(test_data.shape)
 
     # configure logging
     logging.basicConfig(
@@ -61,7 +55,6 @@ if __name__ == '__main__':
     logging.info(f'Mode:                     {args.mode}')
     logging.info(f'Model Type:               {args.model_type}')
     logging.info(f'Training Object:          {stock_name} portfolio')
-    # logging.info(f'Trading Period:           {train_date[0]} ~ {train_date[-1]}, {len(train_date)} days')
     # logging.info(f'Test Period:              {test_date[0]} ~ {test_date[-1]}, {len(train_date)} days')
     logging.info(f'Model Weights:            {args.weights}')
     logging.info(f'Training Episode:         {args.episode}')
@@ -70,9 +63,10 @@ if __name__ == '__main__':
 
     # env = TradingEnv(train_data, args.initial_invest)
     env = TradingEnv(data, args.model_type, args.initial_invest, slide)
-    # state_size = env.observation_space.shape
-    state_size = env.observation_space
+    # state_size = env.observation_space
     action_size = env.action_space.n
+    state_size = env.reset().shape
+    # print('state_size',state_size)
     agent = DQNAgent(state_size, action_size, args.mode, args.model_type)
     scaler = get_scaler(env)
 
@@ -94,7 +88,9 @@ if __name__ == '__main__':
 
     for e in tqdm.tqdm(range(args.episode)):
         state = env.reset()
+        print('state shape', state.shape, state)
         # state = scaler.transform([state])
+        # state = scaler.transform(state)
         action_list=[]
         for time in range(env.n_step):
             action = agent.act(state)
