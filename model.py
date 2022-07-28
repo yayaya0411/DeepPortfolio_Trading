@@ -6,14 +6,16 @@ from tensorflow.keras.optimizers import Adam
 
 def dnn(n_obs, n_action):
     """ A multi-layer perceptron """
+    # print('\n',n_obs[0],'\n')
     model = Sequential()
-    model.add(Dense(units=1024, input_dim=n_obs[0], activation="relu"))
+    model.add(Dense(units=1024, input_shape=[n_obs[1]], activation="relu"))
     model.add(Dense(units=1024, activation="relu"))
     model.add(Dropout(0.3))
     model.add(Dense(n_action, activation="linear"))
     model.compile(loss="mse", optimizer=Adam(lr=0.001))
     print(model.summary())
     return model
+
 
 def conv1d(n_obs, n_action):
     kernel_size=2

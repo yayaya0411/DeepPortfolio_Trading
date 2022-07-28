@@ -31,6 +31,7 @@ class DQNAgent(object):
         if self.mode == 'train':
             if np.random.rand() <= self.epsilon:
                 return random.randrange(self.action_size)
+        
         act_values = self.model.predict(state)
         return np.argmax(act_values[0])  # returns action
 

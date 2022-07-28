@@ -5,6 +5,7 @@ import argparse
 import re
 import logging
 import tqdm
+import pickle
 
 from datetime import datetime
 from envs import TradingEnv
@@ -65,8 +66,8 @@ if __name__ == '__main__':
     env = TradingEnv(data, args.model_type, args.initial_invest, slide)
     # state_size = env.observation_space
     action_size = env.action_space.n
-    state_size = env.reset().shape
-    # print('state_size',state_size)
+    state_size = np.array(env.reset()).shape
+    print('state_size',state_size)
     agent = DQNAgent(state_size, action_size, args.mode, args.model_type)
     scaler = get_scaler(env)
 
@@ -88,7 +89,6 @@ if __name__ == '__main__':
 
     for e in tqdm.tqdm(range(args.episode)):
         state = env.reset()
-        print('state shape', state.shape, state)
         # state = scaler.transform([state])
         # state = scaler.transform(state)
         action_list=[]
@@ -104,7 +104,6 @@ if __name__ == '__main__':
             state = next_state
             if done:
                 if args.mode == "test":
-                    print(f'data shape: {data.shape}')
                     # print(daily_portfolio_value)
                     plot_all(stock_name, daily_portfolio_value, env)
                 print(len(action_list),action_list)    

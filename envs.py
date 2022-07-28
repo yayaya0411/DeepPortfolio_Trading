@@ -104,7 +104,8 @@ class TradingEnv(gym.Env):
             obs.extend(self.stock_owned)
             obs.extend(list(self.stock_price))
             obs.append(self.cash_in_hand)
-            return obs
+            obs =  np.reshape(np.array(obs),(1,len(obs)))
+            return obs 
 
     def _get_val(self):
         return np.sum(self.stock_owned * self.stock_price) + self.cash_in_hand
