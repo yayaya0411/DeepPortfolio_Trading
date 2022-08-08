@@ -1,0 +1,14 @@
+# running cache  
+__pycache__/
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# script cache
+portfolio_val/*
+visualization/*
+weights/*
+logs/
+
+# global files
+desktop.ini
