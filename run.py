@@ -34,14 +34,18 @@ if __name__ == '__main__':
     maybe_make_dir('portfolio_val')
     maybe_make_dir('scaler')
 
-    slide = 20
+    slide = 10
             
     stock_name = args.stock
     # stock_table = f"{stock_name}_table"
     stock_table = f"{stock_name.split('_')[0]}_table"
+    print(stock_table)
     timestamp = time.strftime('%Y%m%d%H%M')
 
     data = get_data(stock_name, stock_table)
+
+    stock_code = pd.read_csv('data/{}.csv'.format(stock_name)).drop(columns="DateTime")
+    stock_code = stock_code.columns
 
     # configure logging
     logging.basicConfig(
@@ -53,8 +57,9 @@ if __name__ == '__main__':
         )
     logging.info(f'Mode:                     {args.mode}')
     logging.info(f'Model Type:               {args.model_type}')
-    logging.info(f'Training Object:          {stock_name} portfolio')
-    # logging.info(f'Test Period:              {test_date[0]} ~ {test_date[-1]}, {len(train_date)} days')
+    logging.info(f'Training Object:          {stock_name}')
+    logging.info(f'Portfolio Stock:          {stock_code}')
+    logging.info(f'Window Slide:             {slide} days')
     logging.info(f'Model Weights:            {args.weights}')
     logging.info(f'Training Episode:         {args.episode}')
     logging.info(f'Initial Invest Value:    ${args.initial_invest:,}')

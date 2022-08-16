@@ -1,7 +1,9 @@
 
 
 
-scaler_file = 'ALL_2015_2020_scaler.sav'
+# scaler_file = 'ALL_2015_2020_scaler.sav'
+# scaler_file = 'TW0050_2015_2020_scaler.sav'
+scaler_file = 'Slope_2015_2020_scaler.sav'
 
 
 
@@ -30,6 +32,12 @@ ALL ={
     ] 
 }
 
+Slope = {
+    'name':'Slope',
+    'portfolio':[
+        '8454', '6415', '8046', '1590', '2379', '2330', '3034', '2357', '2615','2308'
+    ]
+}
 
 # 0050 Y110Q3
 TW0050 ={
