@@ -44,6 +44,7 @@ class TradingEnv(gym.Env):
         self.stock_owned = None
         self.stock_price = None
         self.cash_in_hand = None
+        self.buy_stock = 100
         self.scaler = pickle.load(open(os.path.join('scaler',scaler_file), 'rb'))
         # action space
         self.action_space = spaces.Discrete(3 ** self.n_stock)
@@ -138,9 +139,9 @@ class TradingEnv(gym.Env):
             elif a == 2: # buy
                 # for j in range(i, 4 * i):
                 for j in range(i, len(action_vec)):
-                    if j < self.n_stock and self.cash_in_hand > self.stock_price[i] * 1000:
-                        self.stock_owned[j] += 1000  # buy 1000 share
-                        self.cash_in_hand -= self.stock_price[j] * 1000
+                    if j < self.n_stock and self.cash_in_hand > self.stock_price[i] * self.buy_stock:
+                        self.stock_owned[j] += self.buy_stock  # buy 1000 share
+                        self.cash_in_hand -= self.stock_price[j] * self.buy_stock
                     else:
                         break
 

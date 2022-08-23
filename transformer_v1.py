@@ -1,66 +1,9 @@
-# import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, LSTM, Conv1D, Flatten, BatchNormalization, MaxPooling1D
-from tensorflow.keras.optimizers import Adam
 
+import tensorflow as tf
+from tensorflow.keras.models import *
+from tensorflow.keras.layers import *
+import numpy as np
 
-'''
-dnn 
-'''
-def dnn(n_obs, n_action):
-    """ A multi-layer perceptron """
-    # print('\n',n_obs[0],'\n')
-    model = Sequential()
-    model.add(Dense(units=256, input_shape=[n_obs[1]], activation="relu"))
-    model.add(Dense(units=512, activation="relu"))
-    model.add(Dropout(0.3))
-    model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(n_action, activation="linear"))
-    model.compile(loss="mse", optimizer=Adam(lr=0.001))
-    print(model.summary())
-    return model
-
-'''
-Conv1d 
-'''
-def conv1d(n_obs, n_action):
-    kernel_size=2
-    strides=1
-    padding = 'same'
-    model = Sequential()
-    model.add(Conv1D(filters = 128, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu',input_shape=(n_obs[1],n_obs[2])))
-    model.add(Conv1D(filters = 256, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu'))
-    model.add(BatchNormalization())
-    model.add(Dropout(0.3))
-    model.add(MaxPooling1D(2))
-    model.add(Conv1D(filters = 512, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu'))
-    model.add(Dropout(0.3))
-    model.add(MaxPooling1D(2))
-    model.add(Flatten())
-    model.add(Dense(n_action, activation="softmax"))
-    model.compile(loss="mse", optimizer=Adam(lr=0.001))
-    print(model.summary())
-    return model
-
-'''
-LSTM 
-'''
-def lstm(n_obs, n_action):
-    model = Sequential()
-    model.add(LSTM(64, return_sequences=True,input_shape=(n_obs[1],n_obs[2])))
-    # model.add(LSTM(128, dropout=0.2, return_sequences=True))
-    model.add(LSTM(128, return_sequences=True,dropout=0.3))
-    model.add(LSTM(256, return_sequences=True,dropout=0.3))
-    model.add(Flatten())
-    model.add(Dropout(0.3))
-    model.add(Dense(n_action, activation="softmax"))
-    model.compile(loss="mse", optimizer=Adam(lr=0.001))
-    print(model.summary())
-    return model
-
-'''
-Transformer 
-'''
 batch_size = 32
 seq_len = 128
 

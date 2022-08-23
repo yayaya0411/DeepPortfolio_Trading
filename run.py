@@ -6,6 +6,7 @@ import re
 import logging
 import tqdm
 import pickle
+import pandas as pd
 
 from datetime import datetime
 from envs import TradingEnv
@@ -45,7 +46,12 @@ if __name__ == '__main__':
     data = get_data(stock_name, stock_table)
 
     stock_code = pd.read_csv('data/{}.csv'.format(stock_name)).drop(columns="DateTime")
-    stock_code = stock_code.columns
+    stock_code = sorted(stock_code.columns)
+
+    env = TradingEnv(data, args.model_type, args.initial_invest, slide)
+    action_size = env.action_space.n
+    state_size = np.array(env.reset()).shape
+    agent = DQNAgent(state_size, action_size, args.mode, args.model_type)
 
     # configure logging
     logging.basicConfig(
@@ -60,18 +66,14 @@ if __name__ == '__main__':
     logging.info(f'Training Object:          {stock_name}')
     logging.info(f'Portfolio Stock:          {stock_code}')
     logging.info(f'Window Slide:             {slide} days')
+    logging.info(f'Buy/Sell Stocks:          {env.buy_stock} per action')
     logging.info(f'Model Weights:            {args.weights}')
     logging.info(f'Training Episode:         {args.episode}')
     logging.info(f'Initial Invest Value:    ${args.initial_invest:,}')
     logging.info(f'='*30)
 
     # env = TradingEnv(train_data, args.initial_invest)
-    env = TradingEnv(data, args.model_type, args.initial_invest, slide)
     # state_size = env.observation_space
-    action_size = env.action_space.n
-    state_size = np.array(env.reset()).shape
-    print('state_size',state_size)
-    agent = DQNAgent(state_size, action_size, args.mode, args.model_type)
     # scaler = get_scaler(env)
 
     portfolio_value = []
@@ -117,7 +119,7 @@ if __name__ == '__main__':
                 break
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
-        if args.mode == 'train' and (e+1) % 1 == 0:  # checkpoint weights
+        if args.mode == 'train' and (e+1) % 4 == 0:  # checkpoint weights
             agent.save(f'weights/{args.model_type}/{stock_name}_{args.model_type}-{timestamp}-ep{e+1}.h5')
     if args.mode == 'train':
         print("mean portfolio_val:", np.mean(portfolio_value))
