@@ -1,8 +1,11 @@
-# import tensorflow as tf
+import tensorflow as tf
+from tensorflow.keras.models import *
+from tensorflow.keras.layers import *
+import numpy as np
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM, Conv1D, Flatten, BatchNormalization, MaxPooling1D
 from tensorflow.keras.optimizers import Adam
-
 
 '''
 dnn 
@@ -14,7 +17,7 @@ def dnn(n_obs, n_action):
     model.add(Dense(units=256, input_shape=[n_obs[1]], activation="relu"))
     model.add(Dense(units=512, activation="relu"))
     model.add(Dropout(0.3))
-    model.add(Dense(units=1024, activation="relu"))
+    # model.add(Dense(units=1024, activation="relu"))
     model.add(Dense(n_action, activation="linear"))
     model.compile(loss="mse", optimizer=Adam(lr=0.001))
     print(model.summary())
@@ -28,14 +31,14 @@ def conv1d(n_obs, n_action):
     strides=1
     padding = 'same'
     model = Sequential()
-    model.add(Conv1D(filters = 128, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu',input_shape=(n_obs[1],n_obs[2])))
-    model.add(Conv1D(filters = 256, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu'))
+    model.add(Conv1D(filters = 64, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu',input_shape=(n_obs[1],n_obs[2])))
+    model.add(Conv1D(filters = 128, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu'))
+    model.add(Dropout(0.3))
     model.add(BatchNormalization())
-    model.add(Dropout(0.3))
     model.add(MaxPooling1D(2))
-    model.add(Conv1D(filters = 512, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu'))
-    model.add(Dropout(0.3))
-    model.add(MaxPooling1D(2))
+    # model.add(Conv1D(filters = 512, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu'))
+    # model.add(Dropout(0.3))
+    # model.add(MaxPooling1D(2))
     model.add(Flatten())
     model.add(Dense(n_action, activation="softmax"))
     model.compile(loss="mse", optimizer=Adam(lr=0.001))
@@ -50,7 +53,7 @@ def lstm(n_obs, n_action):
     model.add(LSTM(64, return_sequences=True,input_shape=(n_obs[1],n_obs[2])))
     # model.add(LSTM(128, dropout=0.2, return_sequences=True))
     model.add(LSTM(128, return_sequences=True,dropout=0.3))
-    model.add(LSTM(256, return_sequences=True,dropout=0.3))
+    # model.add(LSTM(256, return_sequences=True,dropout=0.3))
     model.add(Flatten())
     model.add(Dropout(0.3))
     model.add(Dense(n_action, activation="softmax"))
@@ -62,7 +65,7 @@ def lstm(n_obs, n_action):
 Transformer 
 '''
 batch_size = 32
-seq_len = 128
+seq_len = 10 # slide window
 
 d_k = 256
 d_v = 256
@@ -227,7 +230,7 @@ class TransformerEncoder(Layer):
         return config
 
 
-def create_model():
+def transformer(n_obs, n_action):
     '''Initialize time and transformer layers'''
     time_embedding = Time2Vector(seq_len)
     attn_layer1 = TransformerEncoder(d_k, d_v, n_heads, ff_dim)
@@ -235,38 +238,20 @@ def create_model():
     attn_layer3 = TransformerEncoder(d_k, d_v, n_heads, ff_dim)
 
     '''Construct model'''
-    in_seq = Input(shape=(seq_len, 22))
+    # in_seq = Input(shape=(seq_len, 22))
+    in_seq = Input(shape=(n_obs[1],n_obs[2]))
     x = time_embedding(in_seq)
     x = Concatenate(axis=-1)([in_seq, x])
     x = attn_layer1((x, x, x))
-    x = attn_layer2((x, x, x))
+    # x = attn_layer2((x, x, x))
     x = attn_layer3((x, x, x))
     x = GlobalAveragePooling1D(data_format='channels_first')(x)
     x = Dropout(0.1)(x)
     x = Dense(64, activation='relu')(x)
     x = Dropout(0.1)(x)
-    out = Dense(1, activation='linear')(x)
+    out = Dense(n_action, activation='linear')(x)
 
     model = Model(inputs=in_seq, outputs=out)
     model.compile(loss='mse', optimizer='adam', metrics=['mae', 'mape'])
     return model
 
-
-tf_model = create_model()
-# model.summary()
-
-# callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5',
-#                                               monitor='val_loss',
-#                                               save_best_only=True, verbose=1)
-
-# history = model.fit(X_train, y_train,
-#                     batch_size=batch_size,
-#                     epochs=1,
-#                     callbacks=[callback],
-#                     validation_data=(X_val, y_val))
-
-# model = tf.keras.models.load_model('/content/Transformer+TimeEmbedding.hdf5',
-#                                    custom_objects={'Time2Vector': Time2Vector,
-#                                                    'SingleAttention': SingleAttention,
-#                                                    'MultiAttention': MultiAttention,
-#                                                    'TransformerEncoder': TransformerEncoder})

@@ -1,7 +1,7 @@
 from collections import deque
 import random
 import numpy as np
-from model import dnn, conv1d, lstm
+from model import dnn, conv1d, lstm, transformer
 
 
 class DQNAgent(object):
@@ -22,6 +22,8 @@ class DQNAgent(object):
             self.model = conv1d(state_size, action_size)
         if model_type == 'lstm':
             self.model = lstm(state_size, action_size)
+        if model_type == 'transformer':
+            self.model = transformer(state_size, action_size)
         self.mode=mode
 
     def remember(self, state, action, reward, next_state, done):

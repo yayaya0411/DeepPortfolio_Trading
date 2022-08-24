@@ -44,7 +44,7 @@ class TradingEnv(gym.Env):
         self.stock_owned = None
         self.stock_price = None
         self.cash_in_hand = None
-        self.buy_stock = 100
+        self.buy_stock = 200
         self.scaler = pickle.load(open(os.path.join('scaler',scaler_file), 'rb'))
         # action space
         self.action_space = spaces.Discrete(3 ** self.n_stock)
@@ -89,7 +89,7 @@ class TradingEnv(gym.Env):
 
     def _get_obs(self, model):
         obs = []
-        if model in ['conv1d', 'lstm']:
+        if model in ['conv1d', 'lstm','transformer']:
             if self.cur_step < self.slide:
                 for i in range(0,(self.slide-self.cur_step)):
                     obs.append(self.stock_price_history[:,0])
@@ -103,7 +103,7 @@ class TradingEnv(gym.Env):
             obs = self.scaler.transform(obs)
             obs = np.reshape(obs, (1, obs.shape[0], obs.shape[1]))
             # obs = self.scaler.transform(obs)
-            if model == 'lstm':
+            if model in ['lstm','transformer']:
                 return obs.T
             else:    
                 return obs
