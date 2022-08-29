@@ -3,9 +3,20 @@
 
 # scaler_file = 'ALL_2015_2020_scaler.sav'
 # scaler_file = 'TW0050_2015_2020_scaler.sav'
-scaler_file = 'Slope_2015_2020_scaler.sav'
+# scaler_file = 'Slope_2015_2020_scaler.sav'
+scaler_file = 'dataset_2015_2020_scaler.sav'
 
 
+
+# Transformer 
+batch_size = 32
+seq_len = 30 # slide window
+slide =  seq_len # slide window
+
+d_k = 256
+d_v = 256
+n_heads = 12
+ff_dim = 256
 
 ## Portfolio Stock
 

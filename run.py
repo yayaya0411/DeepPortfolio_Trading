@@ -15,7 +15,7 @@ from utils import get_data, maybe_make_dir, plot_all #, get_scaler
 
 # stock_name = "tech"
 # stock_table = "tech_table"
-
+from config import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     maybe_make_dir('portfolio_val')
     maybe_make_dir('scaler')
 
-    slide = 10
+    # slide = 10
             
     stock_name = args.stock
     # stock_table = f"{stock_name}_table"
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
         if args.mode == 'train' and (e+1) % 4 == 0:  # checkpoint weights
-            agent.save(f'weights/{args.model_type}/{stock_name}_{args.model_type}-{timestamp}-ep{e+1}.h5')
+            agent.save(f'weights/{args.model_type}/{stock_name}_{args.model_type}-{timestamp}-ep{str(e+1).zfill(2)}.h5')
     if args.mode == 'train':
         print("mean portfolio_val:", np.mean(portfolio_value))
         print("median portfolio_val:", np.median(portfolio_value))

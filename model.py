@@ -7,6 +7,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM, Conv1D, Flatten, BatchNormalization, MaxPooling1D
 from tensorflow.keras.optimizers import Adam
 
+from config import  seq_len, d_k, d_v, n_heads, ff_dim, batch_size
+
 '''
 dnn 
 '''
@@ -64,13 +66,6 @@ def lstm(n_obs, n_action):
 '''
 Transformer 
 '''
-batch_size = 32
-seq_len = 10 # slide window
-
-d_k = 256
-d_v = 256
-n_heads = 12
-ff_dim = 256
 
 
 class Time2Vector(Layer):
@@ -243,7 +238,7 @@ def transformer(n_obs, n_action):
     x = time_embedding(in_seq)
     x = Concatenate(axis=-1)([in_seq, x])
     x = attn_layer1((x, x, x))
-    # x = attn_layer2((x, x, x))
+    x = attn_layer2((x, x, x))
     x = attn_layer3((x, x, x))
     x = GlobalAveragePooling1D(data_format='channels_first')(x)
     x = Dropout(0.1)(x)
