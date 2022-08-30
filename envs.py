@@ -141,7 +141,8 @@ class TradingEnv(gym.Env):
                     break
             elif a == 1: #hold
                 # print('hold')    
-                
+                pass
+            
             elif a == 2: # buy
                 if (i < self.n_stock) and (self.cash_in_hand > (self.stock_price[i] * self.buy_stock)):
                     self.stock_owned[i] += self.buy_stock  # buy 1000 share
