@@ -126,24 +126,57 @@ class TradingEnv(gym.Env):
 
         action_combo = list(map(list, itertools.product([0, 1, 2], repeat=self.n_stock)))
         action_vec = action_combo[action]
-
+        # print('='*40+' trading '+'='*40)
         for i, a in enumerate(action_vec): # i means index, a means action
+            # print(f'trading start index {i} action {a}')
             if a == 0: # sell
-                # for j in range(i, 4 * i):
-                for j in range(i, len(action_vec)):
-                    if j < self.n_stock:
-                        self.cash_in_hand += self.stock_price[j] * self.stock_owned[j]
-                        self.stock_owned[j] = 0
-                    else:
-                        break
+                if i < self.n_stock:
+                    self.cash_in_hand += self.stock_price[i] * self.stock_owned[i]
+                    self.stock_owned[i] = 0
+                    # print(f'{action_vec} sell index {i}, action {a}, n stock {self.n_stock}, stock_owned {self.stock_owned}')
+                    # print('stock price\n',self.stock_price,'\nstock_owned\n',self.stock_owned,'\n')
+                    # print(f'trading stock price {self.stock_price[i]}, now stock owned {self.stock_owned[i]},\n')
+                else:
+                    # print(f'{action_vec} sell break index {i}, action {a} ',self.n_stock, self.stock_owned)
+                    break
+            elif a == 1: #hold
+                # print('hold')    
+                
             elif a == 2: # buy
-                # for j in range(i, 4 * i):
-                for j in range(i, len(action_vec)):
-                    if j < self.n_stock and self.cash_in_hand > self.stock_price[i] * self.buy_stock:
-                        self.stock_owned[j] += self.buy_stock  # buy 1000 share
-                        self.cash_in_hand -= self.stock_price[j] * self.buy_stock
-                    else:
-                        break
+                if (i < self.n_stock) and (self.cash_in_hand > (self.stock_price[i] * self.buy_stock)):
+                    self.stock_owned[i] += self.buy_stock  # buy 1000 share
+                    self.cash_in_hand -= self.stock_price[i] * self.buy_stock
+                    # print(f'{action_vec} buy index {i}, action {a}, {self.n_stock}, cash ${self.cash_in_hand}, cost ${(self.stock_price[i] * self.buy_stock)}\nstock owned {self.stock_owned}')    
+                    # print(self.stock_price,'\n',self.stock_owned,'\n')
+                    # print(self.stock_price[i],'\n',self.stock_owned[i],'\n')
+                else:
+                    # print(f'{action_vec} buy break index {i}, action {a} ',self.n_stock,self.cash_in_hand, (self.stock_price[i] * self.buy_stock), self.stock_owned)
+                    break
+
+        # ================original==================
+        # for i, a in enumerate(action_vec): # i means index, a means action
+        #     print(f'trading start index {i} action {a}')
+        #     if a == 0: # sell
+        #         # for j in range(i, 4 * i):
+        #         for j in range(i, len(action_vec)):
+        #             if j < self.n_stock:
+        #                 self.cash_in_hand += self.stock_price[j] * self.stock_owned[j]
+        #                 self.stock_owned[j] = 0
+        #                 print(f'{action_vec} sell index {i}, action {a}, stock {j}', self.n_stock, self.stock_owned)    
+        #             else:
+        #                 print(f'{action_vec} sell break index {i}, action {a}, stock {j}',self.n_stock, self.stock_owned)
+        #                 break
+        #     elif a == 2: # buy
+        #         # for j in range(i, 4 * i):
+        #         for j in range(i, len(action_vec)):
+        #             if (j < self.n_stock) and (self.cash_in_hand > (self.stock_price[i] * self.buy_stock)):
+        #                 self.stock_owned[j] += self.buy_stock  # buy 1000 share
+        #                 self.cash_in_hand -= self.stock_price[j] * self.buy_stock
+        #                 print(f'{action_vec} buy index {i}, action {a}, stock {j}',self.n_stock,self.cash_in_hand, (self.stock_price[i] * self.buy_stock), self.stock_owned)    
+        #             else:
+        #                 print(f'{action_vec} buy break index {i}, action {a}, stock {j}',self.n_stock,self.cash_in_hand, (self.stock_price[i] * self.buy_stock), self.stock_owned)
+        #                 break
+        # ================original==================
 
 
         # all combo to sell(0), hold(1), or buy(2) stocks
