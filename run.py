@@ -51,11 +51,14 @@ if __name__ == '__main__':
     env = TradingEnv(data, args.model_type, args.initial_invest, slide)
     action_size = env.action_space.n
     state_size = np.array(env.reset()).shape
-    agent = DQNAgent(state_size, action_size, args.mode, args.model_type)
+    
+    model_prefix = f'{stock_name}_{args.model_type}_{timestamp}'
+    agent = DQNAgent(state_size, action_size, args.mode, args.model_type, model_prefix)
+
 
     # configure logging
     logging.basicConfig(
-        filename=f'logs/{args.mode}/{args.model_type}/{args.mode}_{args.model_type}_{stock_name}_{timestamp}.log', 
+        filename=f'logs/{args.mode}/{args.model_type}/{args.mode}_{model_prefix}.log', 
         filemode='w',
         format='[%(asctime)s.%(msecs)03d %(filename)s:%(lineno)3s] %(message)s', 
         datefmt='%m/%d/%Y %H:%M:%S', 
@@ -119,8 +122,8 @@ if __name__ == '__main__':
                 break
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
-        if args.mode == 'train' and (e+1) % 4 == 0:  # checkpoint weights
-            agent.save(f'weights/{args.model_type}/{stock_name}_{args.model_type}-{timestamp}-ep{str(e+1).zfill(2)}.h5')
+        if args.mode == 'train' and (e+1) % 10 == 0:  # checkpoint weights
+            agent.save(f'weights/{args.model_type}/{model_prefix}-ep{str(e+1).zfill(3)}.h5')
     if args.mode == 'train':
         print("mean portfolio_val:", np.mean(portfolio_value))
         print("median portfolio_val:", np.median(portfolio_value))

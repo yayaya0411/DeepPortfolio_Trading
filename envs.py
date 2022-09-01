@@ -6,7 +6,7 @@ import numpy as np
 import itertools
 import pickle
 import os
-from config import scaler_file
+from config import scaler_file, buy_stock
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -44,7 +44,7 @@ class TradingEnv(gym.Env):
         self.stock_owned = None
         self.stock_price = None
         self.cash_in_hand = None
-        self.buy_stock = 200
+        self.buy_stock = buy_stock
         self.scaler = pickle.load(open(os.path.join('scaler',scaler_file), 'rb'))
         # action space
         self.action_space = spaces.Discrete(3 ** self.n_stock)

@@ -1,8 +1,10 @@
 
+# run.py
+slide = 30
 
+# env.py
+buy_stock = 1000
 
-# scaler_file = 'ALL_2015_2020_scaler.sav'
-# scaler_file = 'TW0050_2015_2020_scaler.sav'
 # scaler_file = 'Slope_2015_2020_scaler.sav'
 scaler_file = 'dataset_2015_2020_scaler.sav'
 

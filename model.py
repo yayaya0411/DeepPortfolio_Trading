@@ -6,8 +6,27 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM, Conv1D, Flatten, BatchNormalization, MaxPooling1D
 from tensorflow.keras.optimizers import Adam
+import os
+import datetime
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
 
-from config import  seq_len, d_k, d_v, n_heads, ff_dim, batch_size
+from config import  seq_len, d_k, d_v, n_heads, ff_dim
+
+
+def callback( model_name):
+    callback = EarlyStopping(monitor="loss", patience=100, verbose=1, mode="auto")
+    logdir = os.path.join("logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(logdir, histogram_freq=1)
+
+    checkpoint = ModelCheckpoint(
+        filepath = model_name,
+        monitor = 'val_loss',
+        verbose = 1,
+        save_best_only = True,
+    )
+    return [callback, tensorboard_callback,checkpoint]
+
+
 
 '''
 dnn 
@@ -21,7 +40,7 @@ def dnn(n_obs, n_action):
     model.add(Dropout(0.3))
     # model.add(Dense(units=1024, activation="relu"))
     model.add(Dense(n_action, activation="linear"))
-    model.compile(loss="mse", optimizer=Adam(lr=0.001))
+    model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['mae', 'mape'])
     print(model.summary())
     return model
 
@@ -43,7 +62,7 @@ def conv1d(n_obs, n_action):
     # model.add(MaxPooling1D(2))
     model.add(Flatten())
     model.add(Dense(n_action, activation="softmax"))
-    model.compile(loss="mse", optimizer=Adam(lr=0.001))
+    model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['mae', 'mape'])
     print(model.summary())
     return model
 
@@ -59,7 +78,7 @@ def lstm(n_obs, n_action):
     model.add(Flatten())
     model.add(Dropout(0.3))
     model.add(Dense(n_action, activation="softmax"))
-    model.compile(loss="mse", optimizer=Adam(lr=0.001))
+    model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['mae', 'mape'])
     print(model.summary())
     return model
 
@@ -247,6 +266,8 @@ def transformer(n_obs, n_action):
     out = Dense(n_action, activation='linear')(x)
 
     model = Model(inputs=in_seq, outputs=out)
-    model.compile(loss='mse', optimizer='adam', metrics=['mae', 'mape'])
+    # model.compile(loss='mse', optimizer='adam', metrics=['mae', 'mape'])
+    model.compile(loss='mse', optimizer=Adam(lr=0.001), metrics=['mae', 'mape'])
+    print(model.summary())
     return model
 

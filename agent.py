@@ -1,13 +1,14 @@
 from collections import deque
 import random
 import numpy as np
-from model import dnn, conv1d, lstm, transformer
+from model import dnn, conv1d, lstm, transformer, callback
+import os
 
 
 class DQNAgent(object):
     """ A simple Deep Q agent """
 
-    def __init__(self, state_size, action_size, mode, model_type):
+    def __init__(self, state_size, action_size, mode, model_type, model_prefix):
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
@@ -16,6 +17,8 @@ class DQNAgent(object):
         self.epsilon = 0.10  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
+        self.model_type = model_type
+        self.model_prefix = model_prefix
         if model_type == 'dnn':
             self.model = dnn(state_size, action_size)
         if model_type == 'conv1d':
@@ -58,6 +61,7 @@ class DQNAgent(object):
         target_f[range(batch_size), actions] = target
 
         self.model.fit(states, target_f, epochs=1, verbose=1)
+        # self.model.fit(states, target_f, callbacks = callback(os.path.join('weights', self.model_type, self.model_prefix+'_best.h5')), epochs=1, verbose=1)
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
