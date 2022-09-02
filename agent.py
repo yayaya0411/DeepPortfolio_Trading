@@ -8,14 +8,14 @@ import os
 class DQNAgent(object):
     """ A simple Deep Q agent """
 
-    def __init__(self, state_size, action_size, mode, model_type, model_prefix):
+    def __init__(self, state_size, action_size, mode, model_type, model_prefix=None):
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
         self.gamma = 0.95  # discount rate
         # self.epsilon = 1.0  # exploration rate
         self.epsilon = 0.10  # exploration rate
-        self.epsilon_min = 0.01
+        self.epsilon_min = 0.05
         self.epsilon_decay = 0.995
         self.model_type = model_type
         self.model_prefix = model_prefix
@@ -62,9 +62,10 @@ class DQNAgent(object):
 
         self.model.fit(states, target_f, epochs=1, verbose=1)
         # self.model.fit(states, target_f, callbacks = callback(os.path.join('weights', self.model_type, self.model_prefix+'_best.h5')), epochs=1, verbose=1)
-
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
+        
+        #``` to convergence state ```
+        # if self.epsilon > self.epsilon_min:
+        #     self.epsilon *= self.epsilon_decay
 
     def load(self, name):
         self.model.load_weights(name)

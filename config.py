@@ -1,6 +1,6 @@
 
 # run.py
-slide = 30
+# slide = 30
 
 # env.py
 buy_stock = 1000
@@ -12,7 +12,7 @@ scaler_file = 'dataset_2015_2020_scaler.sav'
 
 # Transformer 
 batch_size = 32
-seq_len = 30 # slide window
+seq_len = 60 # slide window
 slide =  seq_len # slide window
 
 d_k = 256
