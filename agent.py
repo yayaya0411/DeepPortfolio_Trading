@@ -1,7 +1,7 @@
 from collections import deque
 import random
 import numpy as np
-from model import dnn, conv1d, lstm, transformer, callback
+from model import dnn, conv1d, conv2d, lstm, transformer, callback
 import os
 
 
@@ -16,13 +16,15 @@ class DQNAgent(object):
         # self.epsilon = 1.0  # exploration rate
         self.epsilon = 0.10  # exploration rate
         self.epsilon_min = 0.05
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.99
         self.model_type = model_type
         self.model_prefix = model_prefix
         if model_type == 'dnn':
             self.model = dnn(state_size, action_size)
         if model_type == 'conv1d':
             self.model = conv1d(state_size, action_size)
+        if model_type == 'conv2d':
+            self.model = conv2d(state_size, action_size)
         if model_type == 'lstm':
             self.model = lstm(state_size, action_size)
         if model_type == 'transformer':

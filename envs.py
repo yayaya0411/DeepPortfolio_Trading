@@ -6,7 +6,7 @@ import numpy as np
 import itertools
 import pickle
 import os
-from config import scaler_file, buy_stock
+from config import scaler_file, buy_stock, to_ratio, to_gray
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -34,6 +34,8 @@ class TradingEnv(gym.Env):
         # self.buy_date = [[] for _ in range(self.n_industry)]
         # self.sell_date = [[] for _ in range(self.n_industry)]
         self.stock_price_history = train_data # round up to integer to reduce state space
+        self.stock_price_ratio = pd.DataFrame(train_data).pct_change().iloc[1:].values
+        self.stock_price_gray = pd.DataFrame(self.stock_price_ratio).apply(lambda x : np.where(x>=0,1,0)).values
         self.n_stock, self.n_step = self.stock_price_history.shape
 
         # instance attributes
@@ -56,7 +58,7 @@ class TradingEnv(gym.Env):
         # cash_in_hand_range = [[0, init_invest * 2]]
         # self.observation_space = spaces.MultiDiscrete(stock_range + price_range + cash_in_hand_range)
         # self.observation_space = ()
-        self.observation_space = 200 # stocks * slide
+        # self.observation_space = 200 # stocks * slide
         # seed and start
         self._seed()
         self._reset()
@@ -70,7 +72,6 @@ class TradingEnv(gym.Env):
         self.stock_owned = [0] * self.n_stock
         self.stock_price = self.stock_price_history[:, self.cur_step]
 
-        # print(len(self.stock_price_history[:, self.cur_step]),self.stock_price_history[:, self.cur_step])
 
         self.cash_in_hand = self.init_invest
         return self._get_obs(self.model)
@@ -89,18 +90,27 @@ class TradingEnv(gym.Env):
 
     def _get_obs(self, model):
         obs = []
-        if model in ['conv1d', 'lstm','transformer']:
+        stock = self.stock_price_history
+        assert to_ratio != to_gray, f'\ncheck config.py to_ratio and to_gray both True\n'
+        
+        if to_ratio:
+            stock = self.stock_price_ratio 
+        if to_gray:
+            stock = self.stock_price_gray
+               
+        if model in ['conv1d', 'conv2d', 'lstm','transformer']:
             if self.cur_step < self.slide:
                 for i in range(0,(self.slide-self.cur_step)):
-                    obs.append(self.stock_price_history[:,0])
+                    obs.append(stock[:,0])
                 for i in range(0,self.cur_step + 1):
-                    obs.append(self.stock_price_history[:,i])
+                    obs.append(stock[:,i])
             else:
                 for i in range((self.cur_step-self.slide), self.cur_step + 1):
-                    obs.append(self.stock_price_history[:,i])
+                    obs.append(stock[:,i])
             obs = obs[-self.slide:]
             obs = np.array(obs)
-            obs = self.scaler.transform(obs)
+            if not to_ratio:
+                obs = self.scaler.transform(obs)
             obs = np.reshape(obs, (1, obs.shape[0], obs.shape[1]))
             # obs = self.scaler.transform(obs)
             if model in ['lstm','transformer']:
@@ -115,7 +125,8 @@ class TradingEnv(gym.Env):
             # obs = np.reshape(obs,(1,obs.shape[1]))
             # print(obs)
             obs = np.reshape(obs,(1,len(obs)))
-            obs = self.scaler.transform(obs)
+            if not to_ratio:
+                obs = self.scaler.transform(obs)
             # print(obs)
             return obs 
 

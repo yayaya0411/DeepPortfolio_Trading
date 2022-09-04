@@ -11,8 +11,7 @@ import pandas as pd
 from datetime import datetime
 from envs import TradingEnv
 from agent import DQNAgent
-from utils import get_data, maybe_make_dir, plot_all #, get_scaler
-
+from utils import get_data, maybe_make_dir, plot_all 
 # stock_name = "tech"
 # stock_table = "tech_table"
 from config import *
@@ -42,6 +41,7 @@ if __name__ == '__main__':
     stock_table = f"{stock_name.split('_')[0]}_table"
     print(stock_table)
     timestamp = time.strftime('%Y%m%d%H%M')
+    datestamp = time.strftime('%Y%m%d')
 
     data = get_data(stock_name, stock_table)
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     # configure logging
     logging.basicConfig(
-        filename=f'logs/{args.mode}/{args.model_type}/{args.mode}_{model_prefix}.log', 
+        filename=f'logs/{args.mode}/{args.model_type}/{datestamp}_{args.mode}_{model_prefix}.log', 
         filemode='w',
         format='[%(asctime)s.%(msecs)03d %(filename)s:%(lineno)3s] %(message)s', 
         datefmt='%m/%d/%Y %H:%M:%S', 
@@ -69,6 +69,8 @@ if __name__ == '__main__':
     logging.info(f'Training Object:          {stock_name}')
     logging.info(f'Portfolio Stock:          {stock_code}')
     logging.info(f'Window Slide:             {slide} days')
+    logging.info(f'Turn to Ratio:            {to_ratio}')
+    logging.info(f'Turn to Gray:             {to_gray}')
     logging.info(f'Buy/Sell Stocks:          {env.buy_stock} per action')
     logging.info(f'Model Weights:            {args.weights}')
     logging.info(f'Training Episode:         {args.episode}')
@@ -85,7 +87,7 @@ if __name__ == '__main__':
     if args.mode == 'test':
         # remake the env with test data
         # env = TradingEnv(test_data, args.initial_invest)
-        env = TradingEnv(data, args.model_type, args.initial_invest,slide)
+        env = TradingEnv(data, args.model_type, args.initial_invest, slide)
         # load trained weights
         agent.load(f'weights/{args.model_type}/{args.weights}.h5')
         # when test, the timestamp is same as time when weights was trained

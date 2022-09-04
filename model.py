@@ -4,7 +4,7 @@ from tensorflow.keras.layers import *
 import numpy as np
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, LSTM, Conv1D, Flatten, BatchNormalization, MaxPooling1D
+from tensorflow.keras.layers import Dense, Dropout, LSTM, Conv1D, Conv2D, Flatten, BatchNormalization, MaxPooling1D, MaxPooling2D
 from tensorflow.keras.optimizers import Adam
 import os
 import datetime
@@ -39,7 +39,7 @@ def dnn(n_obs, n_action):
     model.add(Dense(units=512, activation="relu"))
     model.add(Dropout(0.3))
     # model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(n_action, activation="linear"))
+    model.add(Dense(n_action, activation="softmax"))
     model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['mae', 'mape'])
     print(model.summary())
     return model
@@ -60,6 +60,25 @@ def conv1d(n_obs, n_action):
     # model.add(Conv1D(filters = 512, kernel_size=kernel_size, strides=strides, padding=padding, activation = 'relu'))
     # model.add(Dropout(0.3))
     # model.add(MaxPooling1D(2))
+    model.add(Flatten())
+    model.add(Dense(n_action, activation="softmax"))
+    model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['mae', 'mape'])
+    print(model.summary())
+    return model
+
+'''
+Conv2d 
+'''
+def conv2d(n_obs, n_action):
+    kernel_size=(2,2)
+    # strides=(1,1)
+    padding = 'same'
+    model = Sequential()
+    model.add(Conv2D(filters = 64, kernel_size=kernel_size,  padding=padding, activation = 'relu',input_shape=(n_obs[1],n_obs[2],1)))
+    model.add(Conv2D(filters = 128, kernel_size=kernel_size,  padding=padding, activation = 'relu'))
+    model.add(Dropout(0.3))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D(2))
     model.add(Flatten())
     model.add(Dense(n_action, activation="softmax"))
     model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['mae', 'mape'])

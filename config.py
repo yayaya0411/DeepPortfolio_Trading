@@ -3,16 +3,18 @@
 # slide = 30
 
 # env.py
-buy_stock = 1000
+to_ratio = True
+to_gray = False
+buy_stock = 100
 
 # scaler_file = 'Slope_2015_2020_scaler.sav'
-scaler_file = 'dataset_2015_2020_scaler.sav'
+scaler_file = 'dataset_2017_2020_scaler.sav'
 
 
 
 # Transformer 
 batch_size = 32
-seq_len = 60 # slide window
+seq_len = 40 # slide window
 slide =  seq_len # slide window
 
 d_k = 256
