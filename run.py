@@ -52,13 +52,13 @@ if __name__ == '__main__':
     action_size = env.action_space.n
     state_size = np.array(env.reset()).shape
     
-    model_prefix = f'{stock_name}_{args.model_type}_{timestamp}'
+    model_prefix = f'{timestamp}_{stock_name}_{args.model_type}'
     agent = DQNAgent(state_size, action_size, args.mode, args.model_type, model_prefix)
 
 
     # configure logging
     logging.basicConfig(
-        filename=f'logs/{args.mode}/{args.model_type}/{datestamp}_{args.mode}_{model_prefix}.log', 
+        filename=f'logs/{args.mode}/{args.model_type}/{model_prefix}_{args.mode}.log', 
         filemode='w',
         format='[%(asctime)s.%(msecs)03d %(filename)s:%(lineno)3s] %(message)s', 
         datefmt='%m/%d/%Y %H:%M:%S', 
@@ -102,23 +102,32 @@ if __name__ == '__main__':
         # state = scaler.transform([state])
         # state = scaler.transform(state)
         action_list=[]
+        action_target = None
+        action_target_cnts = 1
+        reward_discount = 0.95
         for time in range(env.n_step):
             action = agent.act(state)
             action_list.append(action)
             next_state, reward, done, info = env.step(action)
-            # next_state = scaler.transform([next_state])
+                
             if args.mode == 'train':
+                # encourage change policy
+                if action == action_target:
+                    reward *= reward * reward_discount ** action_target_cnts
+                    action_target_cnts +=1
+                else:
+                    print(f'encourage avoid same action')
+                    action_target_cnts = 1
+                # remember and train    
                 agent.remember(state, action, reward, next_state, done)
             if args.mode == "test":
                 daily_portfolio_value.append(info['cur_val'])
             state = next_state
             if done:
                 if args.mode == "test":
-                    # print(daily_portfolio_value)
                     plot_all(stock_name, args.model_type, daily_portfolio_value, env)
                 print(len(action_list),action_list)    
                 daily_portfolio_value = []
-                # logging.info("episode: {}/{}, episode end value: {}".format(e + 1, args.episode, info['cur_val']))
                 logging.info(f"episode: {e+1}/{args.episode}, episode end value: {info['cur_val']}")
                 portfolio_value.append(info['cur_val']) # append episode end portfolio value
                 break
@@ -126,9 +135,6 @@ if __name__ == '__main__':
                 agent.replay(args.batch_size)
         if args.mode == 'train' and (e+1) % 10 == 0:  # checkpoint weights
             agent.save(f'weights/{args.model_type}/{model_prefix}-ep{str(e+1).zfill(3)}.h5')
-    if args.mode == 'train':
-        print("mean portfolio_val:", np.mean(portfolio_value))
-        print("median portfolio_val:", np.median(portfolio_value))
     # save portfolio value history to disk
     with open('portfolio_val/{}-{}.p'.format(timestamp, args.mode), 'wb') as fp:
         pickle.dump(portfolio_value, fp)

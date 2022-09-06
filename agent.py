@@ -14,7 +14,7 @@ class DQNAgent(object):
         self.memory = deque(maxlen=2000)
         self.gamma = 0.95  # discount rate
         # self.epsilon = 1.0  # exploration rate
-        self.epsilon = 0.10  # exploration rate
+        self.epsilon = 0.30  # exploration rate
         self.epsilon_min = 0.05
         self.epsilon_decay = 0.99
         self.model_type = model_type
@@ -37,6 +37,7 @@ class DQNAgent(object):
     def act(self, state):
         if self.mode == 'train':
             if np.random.rand() <= self.epsilon:
+                print(f' exploration action')
                 return random.randrange(self.action_size)
         
         act_values = self.model.predict(state)

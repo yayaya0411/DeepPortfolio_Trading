@@ -71,8 +71,6 @@ class TradingEnv(gym.Env):
         self.cur_step = 0
         self.stock_owned = [0] * self.n_stock
         self.stock_price = self.stock_price_history[:, self.cur_step]
-
-
         self.cash_in_hand = self.init_invest
         return self._get_obs(self.model)
 
