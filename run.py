@@ -104,7 +104,7 @@ if __name__ == '__main__':
         action_list=[]
         action_target = None
         action_target_cnts = 1
-        reward_discount = 0.95
+        reward_discount = 0.9
         for time in range(env.n_step):
             action = agent.act(state)
             action_list.append(action)
@@ -113,11 +113,13 @@ if __name__ == '__main__':
             if args.mode == 'train':
                 # encourage change policy
                 if action == action_target:
-                    reward *= reward * reward_discount ** action_target_cnts
+                    print(f'encourage avoid same action {action}')
+                    reward *= (reward * reward_discount ** action_target_cnts)
                     action_target_cnts +=1
+                    action_target = action
                 else:
-                    print(f'encourage avoid same action')
                     action_target_cnts = 1
+                    action_target = None
                 # remember and train    
                 agent.remember(state, action, reward, next_state, done)
             if args.mode == "test":
